@@ -5,7 +5,7 @@ start()-> register(server, spawn(?MODULE, loop, [])).
 
 loop()->
 		receive
-			{print, Message}->io:format("~p~n", [Message]), loop();
+			{print, Message}->io:format("~p~n", [erlang:loaded()]), loop();
 			{stop}->io:format("Server stopped~n",[])
 		end.
 
