@@ -1,9 +1,9 @@
 -module(das).
--export([start/0, store/3, stop/1, lookup/1, loop/2]).
+-export([start/1, store/2, stop/1, lookup/1, loop/3]).
 
-start()->register(node(), spawn(node(), ?MODULE, loop, [node(), []])).
+start(Processes)->register(node(), spawn(node(), ?MODULE, loop, [node(), Processes, []])).
 		 
-store(Tag, Value, Name) -> {Name, Name}!{store, node(), {Tag, Value}}.
+store(Tag, Value) -> {node(), node()}!{store, node(), {Tag, Value}}.
 
 stop(Server)->{Server, Server}!stop.
 
@@ -15,18 +15,18 @@ is_member(Tag, Elm)->
 		_->false
 	end.
 
-loop(Self, Stored)->
+loop(Self, Processes, Stored)->
 	receive
-		{store, a@alberto, {Tag, Value}} -> io:format("Registered~n"), 
-											{b@alberto, b@alberto}!{update, {Tag, Value}}, 
-											loop(Self, [{Tag,Value}|Stored]);
-		{store, b@alberto, {Tag, Value}} -> io:format("Registered~n"), 
-											{a@alberto, a@alberto}!{update, {Tag, Value}}, 
-											loop(Self, [{Tag,Value}|Stored]);
-		{update, {Tag, Value}} -> loop(Self, [{Tag,Value}|Stored]);	
+		{store, Curr, {Tag, Value}} -> io:format("Registered~n"), 
+											[{X, X}!{update, {Tag, Value}} || X<-Processes, X=/=Curr], 
+											loop(Self, Processes, [{Tag,Value}|Stored]);
+		{update, {Tag, Value}} -> loop(Self, Processes, [{Tag,Value}|Stored]);	
 		{lookup, Tag} -> io:format("~p~n", [[X||X<-Stored, is_member(Tag, X)]]), 
-								 loop(Self, Stored);
+								 loop(Self, Processes, Stored);
 		{print, Message} -> io:format("~p~n", [Message]),
-							loop(Self, Stored);
+							loop(Self, Processes, Stored);
 		stop->io:format("Server ~p terminated~n", [Self])
 	end.
+
+%c(das). das:start([a@alberto, b@alberto]).
+%
