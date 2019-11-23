@@ -1,5 +1,5 @@
 -module(ms).
--export([start/1, to_slave/2, start_aux/2, slave/1, master/1, remove/2]).
+-export([start/1, to_slave/2, start_aux/2, slave/1, master/1]).
 
 start(N)->register(master, spawn(?MODULE, start_aux, [N, []])).
 
