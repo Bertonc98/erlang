@@ -1,8 +1,5 @@
 -module(attesa).
--export([attesa/0]).
+-export([attesa/2]).
 
-attesa()->
-	receive
-		ciao->io:format("ciao~n",[]), attesa();
-		_->io:format("closed~n",[])
-	end.
+attesa({N, _}, {X, _}) when N=/=X-> true;
+attesa(_,_)->false.	
